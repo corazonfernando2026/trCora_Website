@@ -3000,6 +3000,7 @@ let hasJoined = false;
 let playerSessionId = null;
 let votedFor = {};
 let playerName = localStorage.getItem('itaidoshin_player_name') || '';
+let joinRenderedFor = null; // guards against re-rendering the join screen mid-typing
 
 async function startPlayer(){
   await pollPlayer();
@@ -3096,7 +3097,14 @@ async function pollPlayer(){
     }
   }
 
-  if(!hasJoined){ return renderJoin(); }
+  if(!hasJoined){
+    if(joinRenderedFor !== sess.id){
+      joinRenderedFor = sess.id;
+      renderJoin();
+    }
+    return;
+  }
+  joinRenderedFor = null;
 
   const state = await storeGet(stateKey(playerSessionId));
   if(!state){ return renderNoGameYet(); }
