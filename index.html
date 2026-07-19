@@ -145,6 +145,11 @@
   .stat-card{ background:var(--navy-soft); border:1px solid var(--line); border-radius:16px; padding:16px; flex:1; min-width:140px; }
   .stat-card .num{ font-family:'JetBrains Mono', monospace; font-size:30px; color:var(--gold); }
   .stat-card .lbl{ font-size:11.5px; color:rgba(246,241,228,0.55); text-transform:uppercase; letter-spacing:.08em; }
+  .roster-list{ margin-top:10px; padding-top:10px; border-top:1px solid var(--line); font-size:12.5px; line-height:1.7; color:rgba(246,241,228,0.75); max-height:110px; overflow-y:auto; text-align:left; }
+  .roster-list .empty{ color:rgba(246,241,228,0.4); font-style:italic; }
+  .join-input.error{ border-color:var(--maroon); }
+  .setup-warning{ background:rgba(164,82,79,0.18); border:1px solid var(--maroon); color:#f0d3d2; font-size:13px; line-height:1.6; padding:14px 16px; border-radius:12px; margin:0 0 20px; text-align:left; }
+  .setup-warning code{ background:rgba(0,0,0,0.25); padding:1px 5px; border-radius:5px; font-size:12px; }
 
   .timer-ring-wrap{ display:flex; align-items:center; gap:12px; }
 
@@ -2521,14 +2526,73 @@ const CLOSING_LINE = "Notice how this round was never about finding a clever tri
 
 const VOTE_SECONDS = 20;
 
-/* ============================= STORAGE HELPERS ============================= */
+/* ============================= STORAGE HELPERS =============================
+   This game needs one shared "board" that the host's screen and every
+   player's phone can all read and write — that's what makes votes and the
+   player list show up on the host screen live. A page hosted on GitHub
+   Pages is a static file with no server of its own, so that shared board
+   has to live somewhere else on the internet.
+
+   We use a free Firebase Realtime Database for this. Setup (about 5
+   minutes, one time):
+     1. Go to https://console.firebase.google.com and sign in with any
+        Google account. Click "Add project", give it any name, and create it
+        (you can skip Google Analytics).
+     2. In the left sidebar: Build > Realtime Database > Create Database.
+        Pick any location and start in "test mode".
+     3. Copy the database URL shown at the top of that page — it looks like
+        https://YOUR-PROJECT-default-rtdb.YOUR-REGION.firebasedatabase.app
+     4. Paste it below as FIREBASE_DB_URL, replacing the placeholder.
+     5. In the "Rules" tab of the Realtime Database, paste this and click
+        "Publish" (test mode rules expire after 30 days otherwise, which
+        would silently break the game later):
+              { "rules": { ".read": true, ".write": true } }
+        Note: this makes the data publicly readable/writable by anyone with
+        the URL. That's fine for a party game with no sensitive data (just
+        first names and vote counts) — just don't reuse this Firebase
+        project for anything private.
+     6. Commit and push index.html, then reload the GitHub Pages site.
+   ------------------------------------------------------------------- */
+
+const FIREBASE_DB_URL = 'https://YOUR-PROJECT-default-rtdb.YOUR-REGION.firebasedatabase.app';
+
+function isFirebaseConfigured(){
+  return !!FIREBASE_DB_URL && !FIREBASE_DB_URL.includes('YOUR-PROJECT');
+}
+
+function keyToPath(key){
+  return key.split(':').map(encodeURIComponent).join('/');
+}
 
 async function storeGet(key){
-  try{ const r = await window.storage.get(key, true); return r ? JSON.parse(r.value) : null; }
-  catch(e){ return null; }
+  if(!isFirebaseConfigured()) return null;
+  try{
+    const res = await fetch(`${FIREBASE_DB_URL}/${keyToPath(key)}.json`, {cache:'no-store'});
+    if(!res.ok) return null;
+    return await res.json();
+  }catch(e){ return null; }
 }
 async function storeSet(key, value){
-  try{ await window.storage.set(key, JSON.stringify(value), true); }catch(e){}
+  if(!isFirebaseConfigured()) return;
+  try{
+    await fetch(`${FIREBASE_DB_URL}/${keyToPath(key)}.json`, {
+      method:'PUT',
+      headers:{'Content-Type':'application/json'},
+      body: JSON.stringify(value)
+    });
+  }catch(e){}
+}
+// Writes just one field under a key without overwriting the rest — used so
+// two players joining at the same instant can't clobber each other.
+async function storeSetField(baseKey, field, value){
+  if(!isFirebaseConfigured()) return;
+  try{
+    await fetch(`${FIREBASE_DB_URL}/${keyToPath(baseKey)}/${encodeURIComponent(field)}.json`, {
+      method:'PUT',
+      headers:{'Content-Type':'application/json'},
+      body: JSON.stringify(value)
+    });
+  }catch(e){}
 }
 
 const SESSION_KEY = 'itaidoshin:session';
@@ -2549,7 +2613,7 @@ async function createNewSession(){
   const session = { id, status:'active', startedAt: Date.now() };
   await storeSet(SESSION_KEY, session);
   await storeSet(stateKey(id), defaultState());
-  await storeSet(playersKey(id), 0);
+  await storeSet(playersKey(id), {});
   return session;
 }
 
@@ -2576,6 +2640,19 @@ function el(html){
   const d = document.createElement('div');
   d.innerHTML = html.trim();
   return d.firstChild;
+}
+
+function escapeHtml(s){
+  return String(s).replace(/[&<>"']/g, c => ({'&':'&amp;','<':'&lt;','>':'&gt;','"':'&quot;',"'":'&#39;'}[c]));
+}
+
+function getPlayerId(){
+  let id = localStorage.getItem('itaidoshin_player_id');
+  if(!id){
+    id = 'p'+Date.now().toString(36)+Math.random().toString(36).slice(2,8);
+    localStorage.setItem('itaidoshin_player_id', id);
+  }
+  return id;
 }
 
 async function copyTextToClipboard(text){
@@ -2644,6 +2721,7 @@ function renderLanding(){
   app.innerHTML = '';
   app.appendChild(el(`
     <div>
+      ${!isFirebaseConfigured() ? `<div class="setup-warning"><strong>One-time setup needed:</strong> this game needs a free Firebase Realtime Database so phones and the host screen can share votes and the player list. Open <code>index.html</code> and follow the instructions above the <code>FIREBASE_DB_URL</code> constant (search for "STORAGE HELPERS"), then paste your database URL in and republish. Until then, joining and voting won't sync between devices.</div>` : ''}
       <div style="text-align:center; padding-top:20px;">
         <div class="eyebrow">A right-tool, right-time voting game</div>
         <div class="mandala-wrap">${mandalaSVG(38,'ONENESS', true)}</div>
@@ -2725,8 +2803,12 @@ function currentQuestion(state){
 async function getVotes(sessionId, qid){
   return (await storeGet(votesKey(sessionId, qid))) || {0:0,1:0,2:0,3:0};
 }
+async function getPlayerRoster(sessionId){
+  return (await storeGet(playersKey(sessionId))) || {};
+}
 async function getPlayerCount(sessionId){
-  return (await storeGet(playersKey(sessionId))) || 0;
+  const roster = await getPlayerRoster(sessionId);
+  return Object.keys(roster).length;
 }
 
 async function renderHost(state){
@@ -2739,7 +2821,9 @@ async function renderHost(state){
   const q = round.questions[state.qIdx];
   const votes = await getVotes(hostSessionId, q.id);
   const totalVotes = Object.values(votes).reduce((a,b)=>a+b,0);
-  const playerCount = await getPlayerCount(hostSessionId);
+  const roster = await getPlayerRoster(hostSessionId);
+  const rosterNames = Object.values(roster).sort((a,b)=>(a.joinedAt||0)-(b.joinedAt||0)).map(p=>p.name);
+  const playerCount = rosterNames.length;
 
   const now = Date.now();
   const secLeft = state.phase==='voting' ? Math.max(0, Math.ceil((state.voteEndAt-now)/1000)) : 0;
@@ -2779,12 +2863,14 @@ async function renderHost(state){
         <div class="stat-card">
           <div class="num mono">${playerCount}</div>
           <div class="lbl">players joined</div>
+          <div class="roster-list">${rosterNames.length ? rosterNames.map(n=>escapeHtml(n)).join(', ') : '<span class="empty">Waiting for players…</span>'}</div>
         </div>
         <div class="stat-card">
           <div class="num mono">${state.phase==='voting' ? secLeft : totalVotes}</div>
           <div class="lbl">${state.phase==='voting' ? 'seconds left' : 'votes cast'}</div>
         </div>
       </div>
+      ${!isFirebaseConfigured() ? `<div class="setup-warning" style="margin-top:16px;"><strong>Storage isn't configured yet</strong> — votes and joins won't sync across devices until <code>FIREBASE_DB_URL</code> is set (see the comment above it in the code). Open voting will appear to do nothing until this is fixed.</div>` : ''}
 
       <div class="host-controls">
         ${state.phase==='idle' ? `<button class="btn-primary" id="open-vote">Open voting (${VOTE_SECONDS}s)</button>` : ''}
@@ -2913,6 +2999,7 @@ let playerPollTimer = null;
 let hasJoined = false;
 let playerSessionId = null;
 let votedFor = {};
+let playerName = localStorage.getItem('itaidoshin_player_name') || '';
 
 async function startPlayer(){
   await pollPlayer();
@@ -2950,21 +3037,32 @@ function renderSessionEnded(){
 
 function renderJoin(){
   app.innerHTML='';
+  const savedName = localStorage.getItem('itaidoshin_player_name') || '';
   app.appendChild(el(`
     <div class="player-shell">
       <div style="text-align:center; padding-top:40px;">
         <div class="mandala-wrap">${mandalaSVG(20,'JOIN', true)}</div>
         <h1 class="display" style="font-size:32px; margin:8px 0 4px;">ITAI DOSHIN</h1>
-        <p class="hero-sub">Tap in to add your vote to the group.</p>
+        <p class="hero-sub">Type your name to add your vote to the group.</p>
       </div>
       <div class="card">
+        <input class="join-input" id="name-input" type="text" placeholder="Your name" maxlength="24" autocomplete="off" value="${escapeHtml(savedName)}" />
         <button class="btn-primary" id="join-btn">Join as a player</button>
       </div>
     </div>
   `));
-  document.getElementById('join-btn').onclick = async ()=>{
-    const count = await getPlayerCount(playerSessionId);
-    await storeSet(playersKey(playerSessionId), count+1);
+  const nameInput = document.getElementById('name-input');
+  const joinBtn = document.getElementById('join-btn');
+  nameInput.addEventListener('input', ()=> nameInput.classList.remove('error'));
+  nameInput.addEventListener('keydown', (e)=>{ if(e.key==='Enter') joinBtn.click(); });
+  joinBtn.onclick = async ()=>{
+    const name = nameInput.value.trim();
+    if(!name){ nameInput.classList.add('error'); nameInput.focus(); return; }
+    localStorage.setItem('itaidoshin_player_name', name);
+    playerName = name;
+    joinBtn.disabled = true; joinBtn.textContent = 'Joining…';
+    const pid = getPlayerId();
+    await storeSetField(playersKey(playerSessionId), pid, {name, joinedAt: Date.now()});
     hasJoined = true;
     pollPlayer();
   };
@@ -2990,8 +3088,9 @@ async function pollPlayer(){
     playerSessionId = sess.id;
     if(wasAlreadyPlaying){
       // host started a fresh game while I was still connected — follow along automatically
-      const count = await getPlayerCount(playerSessionId);
-      await storeSet(playersKey(playerSessionId), count+1);
+      const pid = getPlayerId();
+      const name = playerName || localStorage.getItem('itaidoshin_player_name') || 'Player';
+      await storeSetField(playersKey(playerSessionId), pid, {name, joinedAt: Date.now()});
     } else {
       hasJoined = false;
     }
