@@ -184,6 +184,18 @@
   /* ---------- Player view ---------- */
   .player-shell{ min-height:100vh; display:flex; flex-direction:column; }
   .waiting{ text-align:center; padding: 60px 20px; }
+  .player-timer{
+    display:flex; align-items:center; justify-content:center; gap:8px;
+    margin: 4px 0 16px; padding:8px 14px; border-radius:999px;
+    background:var(--navy-soft); border:1px solid var(--line); width:fit-content;
+    margin-left:auto; margin-right:auto;
+  }
+  .player-timer .dot{ width:8px; height:8px; border-radius:50%; background:var(--gold); flex-shrink:0; animation: pulse 1.4s ease-in-out infinite; }
+  .player-timer .num{ font-family:'JetBrains Mono', monospace; font-size:16px; color:var(--gold); font-weight:700; }
+  .player-timer .num.urgent{ color:var(--maroon); }
+  .player-timer .lbl{ font-size:11.5px; color:rgba(246,241,228,0.6); text-transform:uppercase; letter-spacing:.06em; }
+  .idle-preview-note{ text-align:center; color:rgba(246,241,228,0.5); font-size:12.5px; margin-top:6px; }
+  .opt.locked{ opacity:0.55; }
   .waiting .pulse{ width:70px; height:70px; margin: 0 auto 20px; border-radius:50%; border:2px solid var(--gold); animation: pulse 1.8s ease-in-out infinite; }
   @keyframes pulse{ 0%{ transform:scale(0.9); opacity:0.5;} 50%{ transform:scale(1.05); opacity:1;} 100%{ transform:scale(0.9); opacity:0.5;} }
 
@@ -2523,7 +2535,7 @@ const ROUNDS = [
     id:'average', title:'Round II', subtitle:'Average — More Than One Option Seems Plausible', gold:false,
     questions:[
       { id:'a1', scenario:"A table leg is loose — you check, and the screw hole is stripped, so the screw just spins without tightening no matter how many times you turn it.", options:["Hammer the screw in the rest of the way","Use a slightly longer screw","Fill the hole and re-drive the screw","Wrap tape tightly around the leg"], correct:2, note:"A longer screw might reach fresh wood, but only if the leg is thick enough — often it's not, and forcing it can crack the wood. Hammering a screw isn't how it's designed to be driven. Tape is a temporary patch that won't hold real weight. Filling the stripped hole rebuilds material for the screw to actually grip — solving the real problem, not just the symptom." },
-      { id:'a2', scenario:"Your team has three genuinely strong ideas, but only five minutes to present — and the client has explicitly said they care most about fast turnaround.", options:["Present the most innovative one, since it will impress them most","Present all 3 quickly, ranked by how good you think they are","Present the two fastest ideas and let the client choose","Present the idea that best matches fast turnaround"], correct:3, note:"Presenting two options \"to let them choose\" sounds client-friendly, but with five minutes you risk explaining neither well — and the client already told you what matters. Ranking by what you personally think is best ignores their stated priority, and the most innovative idea might not even be the fastest. When someone tells you exactly what they need, the sharpest response is to give them that." },
+      { id:'a2', scenario:"Your team has three good ideas, but the client says their top priority is getting the work done quickly. What should your team do?", options:["Present all three ideas and rank them from best to worst","Present the two fastest ideas and let the client choose","Present the one idea that can be completed the fastest","Present the most creative idea because it is the most impressive"], correct:2, note:"Ranking all three still hands the client work they said they don't have time for. Narrowing to two fastest ideas is closer, but it still leaves the deciding to them instead of doing it for them. The most creative idea ignores what was actually asked for. When speed is the stated priority, the sharpest move is to bring the one idea that delivers exactly that." },
       { id:'a3', scenario:"A friend is upset and venting to you about something that already happened and can't be changed. They haven't asked for advice.", options:["Immediately offer three ways they could have handled it differently","Listen and reflect back what they're feeling","Ask gentle clarifying questions to understand the full situation","Validate their feelings, then pivot to solutions"], correct:1, note:"Clarifying questions can feel supportive, but with something already over, it can turn into fact-finding instead of comfort. Validating and then pivoting to solutions is common advice — but they haven't asked for solutions, and there's nothing left to fix. Reflecting their feelings back tells them they've been heard, which is exactly what venting needs." },
     ]
   },
@@ -2548,7 +2560,7 @@ const TOTAL_QUESTIONS = ROUNDS.reduce((sum,r)=>sum+r.questions.length, 0);
 
 const CLOSING_LINE = "Notice how this round was never about finding a clever trick — it was about reading the moment and responding with what's right for right now: inner resolve, unity, house visits, seeking guidance. That is exactly the logic behind tonight's Gosho: it is not that one teaching is simply better — each era needs the teaching suited to where people stand. Tonight, we'll see how the Daishonin makes that case.";
 
-const VOTE_SECONDS = 20;
+const VOTE_SECONDS = 30;
 
 /* ============================= STORAGE HELPERS =============================
    This game needs one shared "board" that the host's screen and every
@@ -3088,6 +3100,7 @@ function renderFinalHost(state){
 /* ============================= PLAYER ============================= */
 
 let playerPollTimer = null;
+let playerVoteTimer = null;
 let hasJoined = false;
 let playerSessionId = null;
 let votedFor = {};
@@ -3164,9 +3177,10 @@ function renderJoin(){
 async function pollPlayer(){
   const sess = await getSession();
 
-  if(!sess){ playerSessionId=null; hasJoined=false; return renderNoGameYet(); }
+  if(!sess){ playerSessionId=null; hasJoined=false; clearInterval(playerVoteTimer); return renderNoGameYet(); }
 
   if(sess.status === 'ended'){
+    clearInterval(playerVoteTimer);
     if(playerSessionId === sess.id){
       const state = await storeGet(stateKey(sess.id));
       return renderFinalPlayer(state || defaultState());
@@ -3190,6 +3204,7 @@ async function pollPlayer(){
   }
 
   if(!hasJoined){
+    clearInterval(playerVoteTimer);
     if(joinRenderedFor !== sess.id){
       joinRenderedFor = sess.id;
       renderJoin();
@@ -3199,13 +3214,14 @@ async function pollPlayer(){
   joinRenderedFor = null;
 
   const state = await storeGet(stateKey(playerSessionId));
-  if(!state){ return renderNoGameYet(); }
+  if(!state){ clearInterval(playerVoteTimer); return renderNoGameYet(); }
   const round = ROUNDS[state.roundIdx];
-  if(!round){ return renderFinalPlayer(state); }
+  if(!round){ clearInterval(playerVoteTimer); return renderFinalPlayer(state); }
   const q = round.questions[state.qIdx];
 
+  clearInterval(playerVoteTimer);
   if(state.phase==='idle'){
-    renderWaiting(round);
+    renderWaiting(state, round, q);
   } else if(state.phase==='voting'){
     await renderVoting(state, round, q);
   } else if(state.phase==='results'){
@@ -3213,18 +3229,32 @@ async function pollPlayer(){
   }
 }
 
-function renderWaiting(round){
+function renderWaiting(state, round, q){
   app.innerHTML='';
   app.appendChild(el(`
     <div class="player-shell">
-      <div class="waiting">
-        <div class="pulse"></div>
+      <div style="padding-top:10px;">
         <div class="eyebrow">${round.subtitle}</div>
-        <h2 class="display" style="font-size:24px;">Waiting for the next scenario…</h2>
-        <p class="hero-sub">Keep your eyes on the shared screen.</p>
+        ${progressBarHTML(state)}
+        <p class="scenario-text" style="font-size:17px;">${q.scenario}</p>
+        <div class="opt-grid">
+          ${q.options.map((opt,i)=>`
+            <div class="opt locked">
+              <span class="letter">${String.fromCharCode(65+i)}</span><span>${opt}</span>
+            </div>
+          `).join('')}
+        </div>
+        <div class="waiting" style="padding:24px 0 0;">
+          <div class="pulse" style="width:44px; height:44px; margin-bottom:12px;"></div>
+          <p class="hero-sub" style="margin-bottom:0;">Read it over — voting opens as soon as the host starts it.</p>
+        </div>
       </div>
     </div>
   `));
+}
+
+function computeSecLeft(state){
+  return Math.max(0, Math.ceil((state.voteEndAt - Date.now())/1000));
 }
 
 async function renderVoting(state, round, q){
@@ -3236,15 +3266,18 @@ async function renderVoting(state, round, q){
   ]);
   const submittedCount = Object.values(votes).reduce((a,b)=>a+b,0);
   const playerCount = Object.keys(roster).length;
+  let secLeft = computeSecLeft(state);
+  const locked = secLeft<=0;
   app.innerHTML='';
   const wrap = el(`
     <div class="player-shell">
       <div style="padding-top:10px;">
         <div class="eyebrow">${round.subtitle}</div>
         ${progressBarHTML(state)}
+        <div class="player-timer"><span class="dot"></span><span class="num mono" id="p-timer-num">${secLeft}</span><span class="lbl">seconds left</span></div>
         <p class="scenario-text" style="font-size:17px;">${q.scenario}</p>
         <div id="p-opts"></div>
-        ${alreadyVoted ? `<div class="note-box">Vote submitted. Waiting on the group…<br><span class="submit-count">${submittedCount} of ${playerCount} submitted</span></div>` : `<p style="text-align:center; color:rgba(246,241,228,0.5); font-size:12.5px;">Tap the answer that feels right.</p>`}
+        <div id="p-note">${alreadyVoted ? `<div class="note-box">Vote submitted — tap a different answer any time before the timer runs out to change it.<br><span class="submit-count">${submittedCount} of ${playerCount} submitted</span></div>` : `<p style="text-align:center; color:rgba(246,241,228,0.5); font-size:12.5px;">Tap the answer that feels right. You can change your mind until time's up.</p>`}</div>
       </div>
     </div>
   `);
@@ -3252,20 +3285,36 @@ async function renderVoting(state, round, q){
   const optsWrap = wrap.querySelector('#p-opts');
   q.options.forEach((opt,i)=>{
     const b = document.createElement('button');
-    b.className = 'opt tap p-opt' + (votedFor[voteKey]===i ? ' selected':'');
-    b.disabled = alreadyVoted;
+    b.className = 'opt tap p-opt' + (votedFor[voteKey]===i ? ' selected':'') + (locked ? ' locked':'');
+    b.disabled = locked;
     b.style.marginBottom = '10px';
     b.innerHTML = `<span class="letter">${String.fromCharCode(65+i)}</span><span>${opt}</span>`;
     b.onclick = async ()=>{
-      if(votedFor[voteKey]!==undefined) return;
-      votedFor[voteKey] = i;
+      if(computeSecLeft(state)<=0) return;
+      const prev = votedFor[voteKey];
+      if(prev === i) return;
       const v = await getVotes(playerSessionId, q.id);
+      if(prev !== undefined){ v[prev] = Math.max(0, (v[prev]||0)-1); }
       v[i] = (v[i]||0)+1;
+      votedFor[voteKey] = i;
       await storeSet(votesKey(playerSessionId, q.id), v);
       renderVoting(state, round, q);
     };
     optsWrap.appendChild(b);
   });
+
+  clearInterval(playerVoteTimer);
+  playerVoteTimer = setInterval(()=>{
+    const s = computeSecLeft(state);
+    const numEl = document.getElementById('p-timer-num');
+    if(!numEl){ clearInterval(playerVoteTimer); return; }
+    numEl.textContent = s;
+    numEl.classList.toggle('urgent', s<=5);
+    if(s<=0){
+      clearInterval(playerVoteTimer);
+      optsWrap.querySelectorAll('.p-opt').forEach(btn=>{ btn.disabled = true; btn.classList.add('locked'); });
+    }
+  }, 1000);
 }
 
 async function renderPlayerResults(state, round, q){
