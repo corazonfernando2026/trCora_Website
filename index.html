@@ -130,12 +130,19 @@
   .opt .pct{ margin-left:auto; font-family:'JetBrains Mono', monospace; font-size:13px; color:var(--gold); z-index:1; }
   .opt.correct{ border-color:var(--jade); }
   .opt.correct .bar{ background:rgba(90,138,112,0.28); }
+  .opt.correct .check-badge{
+    display:inline-flex; align-items:center; justify-content:center;
+    width:20px; height:20px; border-radius:50%; flex-shrink:0;
+    background:var(--jade); color:#fff; font-size:13px; font-weight:700;
+    z-index:1; margin-left:6px;
+  }
   .opt.wrong-winner{ border-color:var(--maroon); }
 
   .opt.tap{ transition: transform .1s ease, border-color .2s ease; }
   .opt.tap:active{ transform: scale(0.98); }
   .opt.selected{ border-color:var(--gold); box-shadow: 0 0 0 2px rgba(212,175,106,0.3) inset; }
   .opt:disabled{ opacity:1; }
+  .submit-count{ font-size:11.5px; color:rgba(246,241,228,0.55); margin-top:4px; letter-spacing:.02em; }
 
   .note-box{ margin-top:18px; padding:14px 16px; border-left:3px solid var(--gold); background:rgba(212,175,106,0.06); border-radius:0 10px 10px 0; font-size:14px; line-height:1.55; color:rgba(246,241,228,0.85); }
 
@@ -2943,6 +2950,7 @@ async function renderHost(state){
         <div class="stat-card">
           <div class="num mono">${state.phase==='voting' ? secLeft : totalVotes}</div>
           <div class="lbl">${state.phase==='voting' ? 'seconds left' : 'votes cast'}</div>
+          ${state.phase==='voting' ? `<div class="submit-count">${totalVotes} of ${playerCount} submitted</div>` : ''}
         </div>
       </div>
       ${!isFirebaseConfigured() ? `<div class="setup-warning" style="margin-top:16px;"><strong>Storage isn't configured yet</strong> — votes and joins won't sync across devices until <code>FIREBASE_DB_URL</code> is set (see the comment above it in the code). Open voting will appear to do nothing until this is fixed.</div>` : ''}
@@ -2991,7 +2999,7 @@ async function renderHost(state){
       if(i===q.correct) div.classList.add('correct');
       if(isWinner && i!==q.correct) div.classList.add('wrong-winner');
     }
-    div.innerHTML = `<div class="bar" style="width:${showResults?pct:0}%"></div><span class="letter">${String.fromCharCode(65+i)}</span><span>${opt}</span>${showResults?`<span class="pct">${pct}%</span>`:''}`;
+    div.innerHTML = `<div class="bar" style="width:${showResults?pct:0}%"></div><span class="letter">${String.fromCharCode(65+i)}</span><span>${opt}</span>${showResults && i===q.correct?`<span class="check-badge">✓</span>`:''}${showResults?`<span class="pct">${pct}%</span>`:''}`;
     optsWrap.appendChild(div);
   });
 
@@ -3190,7 +3198,7 @@ async function pollPlayer(){
   if(state.phase==='idle'){
     renderWaiting(round);
   } else if(state.phase==='voting'){
-    renderVoting(state, round, q);
+    await renderVoting(state, round, q);
   } else if(state.phase==='results'){
     await renderPlayerResults(state, round, q);
   }
@@ -3210,9 +3218,15 @@ function renderWaiting(round){
   `));
 }
 
-function renderVoting(state, round, q){
+async function renderVoting(state, round, q){
   const voteKey = playerSessionId+'::'+q.id;
   const alreadyVoted = votedFor[voteKey] !== undefined;
+  const [votes, roster] = await Promise.all([
+    getVotes(playerSessionId, q.id),
+    getPlayerRoster(playerSessionId)
+  ]);
+  const submittedCount = Object.values(votes).reduce((a,b)=>a+b,0);
+  const playerCount = Object.keys(roster).length;
   app.innerHTML='';
   const wrap = el(`
     <div class="player-shell">
@@ -3221,7 +3235,7 @@ function renderVoting(state, round, q){
         ${progressBarHTML(state)}
         <p class="scenario-text" style="font-size:17px;">${q.scenario}</p>
         <div id="p-opts"></div>
-        ${alreadyVoted ? `<div class="note-box">Vote submitted. Waiting on the group…</div>` : `<p style="text-align:center; color:rgba(246,241,228,0.5); font-size:12.5px;">Tap the answer that feels right.</p>`}
+        ${alreadyVoted ? `<div class="note-box">Vote submitted. Waiting on the group…<br><span class="submit-count">${submittedCount} of ${playerCount} submitted</span></div>` : `<p style="text-align:center; color:rgba(246,241,228,0.5); font-size:12.5px;">Tap the answer that feels right.</p>`}
       </div>
     </div>
   `);
@@ -3269,7 +3283,7 @@ async function renderPlayerResults(state, round, q){
     div.className = 'opt';
     if(i===q.correct) div.classList.add('correct');
     div.style.marginBottom='10px';
-    div.innerHTML = `<div class="bar" style="width:${pct}%"></div><span class="letter">${String.fromCharCode(65+i)}</span><span>${opt}</span><span class="pct">${pct}%</span>`;
+    div.innerHTML = `<div class="bar" style="width:${pct}%"></div><span class="letter">${String.fromCharCode(65+i)}</span><span>${opt}</span>${i===q.correct?`<span class="check-badge">✓</span>`:''}<span class="pct">${pct}%</span>`;
     resWrap.appendChild(div);
   });
 }
@@ -3288,16 +3302,19 @@ function renderFinalPlayer(state){
 }
 
 /* ============================= AMBIENT MUSIC =============================
-   A soft, generated ambient pad + occasional chimes — no audio file needed,
-   so it works straight from GitHub Pages with no extra hosting. Browsers
-   block audio from starting on its own, so it only begins once someone
-   taps the round button in the corner (that tap is what "unlocks" audio).
-   Each device (host laptop, each phone) has its own independent on/off. */
+   "Popstar hook" — a catchy, high-energy synth-pop loop: a steady bass
+   pulse under a bright, glossy melodic hook that repeats. No audio file
+   needed, so it works straight from GitHub Pages with no extra hosting.
+   Browsers block audio from starting on its own, so it only begins once
+   someone taps the round button in the corner (that tap is what "unlocks"
+   audio). Each device (host laptop, each phone) has its own independent
+   on/off. */
 
 let audioCtx = null;
 let musicNodes = null;
 let musicPlaying = false;
-let chimeTimer = null;
+let hookTimer = null;
+let bassTimer = null;
 
 function ensureAudioCtx(){
   if(!audioCtx){
@@ -3305,6 +3322,43 @@ function ensureAudioCtx(){
     catch(e){ return null; }
   }
   return audioCtx;
+}
+
+const HOOK_NOTES = [523.25, 523.25, 587.33, 659.25, 587.33, 523.25, 493.88, 523.25]; // C5 C5 D5 E5 D5 C5 B4 C5
+const HOOK_STEP_SEC = 0.24;
+const BASS_NOTE = 130.81; // C3
+const BASS_STEP_SEC = 1.2;
+
+function playNote(freq, dur, type, vol){
+  if(!audioCtx || !musicNodes) return;
+  const ctx = audioCtx;
+  const o = ctx.createOscillator();
+  o.type = type;
+  o.frequency.value = freq;
+  const g = ctx.createGain();
+  g.gain.value = 0;
+  g.gain.linearRampToValueAtTime(vol, ctx.currentTime + 0.02);
+  g.gain.exponentialRampToValueAtTime(0.0001, ctx.currentTime + dur);
+  o.connect(g);
+  g.connect(musicNodes.master);
+  o.start();
+  o.stop(ctx.currentTime + dur + 0.05);
+}
+
+function scheduleHook(){
+  clearTimeout(hookTimer);
+  if(!musicPlaying || !audioCtx || !musicNodes) return;
+  const i = musicNodes.hookIdx;
+  playNote(HOOK_NOTES[i % HOOK_NOTES.length], 0.3, 'triangle', 0.075);
+  musicNodes.hookIdx = i + 1;
+  hookTimer = setTimeout(scheduleHook, HOOK_STEP_SEC*1000);
+}
+
+function scheduleBass(){
+  clearTimeout(bassTimer);
+  if(!musicPlaying || !audioCtx) return;
+  playNote(BASS_NOTE, 1.1, 'sine', 0.06);
+  bassTimer = setTimeout(scheduleBass, BASS_STEP_SEC*1000);
 }
 
 function startMusic(){
@@ -3316,77 +3370,21 @@ function startMusic(){
   const master = ctx.createGain();
   master.gain.value = 0.0;
   master.connect(ctx.destination);
-  master.gain.linearRampToValueAtTime(0.08, ctx.currentTime + 6);
+  master.gain.linearRampToValueAtTime(0.22, ctx.currentTime + 1.2);
 
-  const filter = ctx.createBiquadFilter();
-  filter.type = 'lowpass';
-  filter.frequency.value = 520;
-  filter.connect(master);
-
-  // a slow, open drone — root + fifth + octave, not a bright triad, kept low and spacious
-  const freqs = [98.00, 146.83, 196.00]; // G2, D3, G3
-  const oscs = freqs.map((f, i)=>{
-    const o = ctx.createOscillator();
-    o.type = 'triangle';
-    o.frequency.value = f;
-    o.detune.value = (i-1)*4;
-    const g = ctx.createGain();
-    g.gain.value = 0.0;
-    g.gain.linearRampToValueAtTime(0.16, ctx.currentTime + 7 + i*1.5);
-    o.connect(g);
-    g.connect(filter);
-    o.start();
-    return {o,g};
-  });
-
-  // very slow LFO — a gentle, barely-there breathing motion, not a pulse
-  const lfo = ctx.createOscillator();
-  lfo.frequency.value = 0.02;
-  const lfoGain = ctx.createGain();
-  lfoGain.gain.value = 90;
-  lfo.connect(lfoGain);
-  lfoGain.connect(filter.frequency);
-  lfo.start();
-
-  musicNodes = { master, filter, oscs, lfo };
+  musicNodes = { master, hookIdx: 0 };
   musicPlaying = true;
-  scheduleChimes();
-}
-
-function scheduleChimes(){
-  clearTimeout(chimeTimer);
-  if(!musicPlaying || !audioCtx) return;
-  const scale = [392.00, 440.00, 523.25, 587.33]; // low, soft — a few calm notes, not a bright run
-  playChime(scale[Math.floor(Math.random()*scale.length)]);
-  chimeTimer = setTimeout(scheduleChimes, 11000 + Math.random()*9000);
-}
-
-function playChime(freq){
-  if(!audioCtx || !musicNodes) return;
-  const ctx = audioCtx;
-  const o = ctx.createOscillator();
-  o.type = 'sine';
-  o.frequency.value = freq;
-  const g = ctx.createGain();
-  g.gain.value = 0;
-  g.gain.linearRampToValueAtTime(0.025, ctx.currentTime + 0.4);
-  g.gain.exponentialRampToValueAtTime(0.0001, ctx.currentTime + 5);
-  o.connect(g);
-  g.connect(musicNodes.master);
-  o.start();
-  o.stop(ctx.currentTime + 5);
+  scheduleHook();
+  scheduleBass();
 }
 
 function stopMusic(){
   musicPlaying = false;
-  clearTimeout(chimeTimer);
-  if(!musicNodes || !audioCtx){ return; }
+  clearTimeout(hookTimer);
+  clearTimeout(bassTimer);
+  if(!musicNodes || !audioCtx){ musicNodes = null; return; }
   const ctx = audioCtx;
-  const { master, oscs, lfo } = musicNodes;
-  master.gain.linearRampToValueAtTime(0.0, ctx.currentTime + 1.2);
-  setTimeout(()=>{
-    try{ oscs.forEach(({o})=>o.stop()); lfo.stop(); }catch(e){}
-  }, 1300);
+  musicNodes.master.gain.linearRampToValueAtTime(0.0, ctx.currentTime + 0.6);
   musicNodes = null;
 }
 
