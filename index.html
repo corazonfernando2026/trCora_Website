@@ -2535,6 +2535,42 @@ const ROUNDS = [
   },
 ];
 
+// Every question above was authored with the correct option listed first
+// (index 0, letter A) for readability. Shuffling here — once, keyed off each
+// question's own id — spreads the correct answer across all four letters
+// instead of it always sitting on A, without ever visibly "reshuffling" in
+// front of players: the seed is derived from the id, so the host's screen
+// and every player's phone independently land on the exact same order for
+// a given question, every time, with no sync needed.
+function hashSeed(str){
+  let h = 2166136261;
+  for(let i=0;i<str.length;i++){
+    h ^= str.charCodeAt(i);
+    h = Math.imul(h, 16777619);
+  }
+  return h >>> 0;
+}
+function seededRandom(seed){
+  return function(){
+    seed = (seed + 0x6D2B79F5) | 0;
+    let t = Math.imul(seed ^ (seed >>> 15), 1 | seed);
+    t = (t + Math.imul(t ^ (t >>> 7), 61 | t)) ^ t;
+    return ((t ^ (t >>> 14)) >>> 0) / 4294967296;
+  };
+}
+function shuffleOptionsInPlace(q){
+  const rand = seededRandom(hashSeed(q.id));
+  const order = q.options.map((_,i)=>i);
+  for(let i=order.length-1;i>0;i--){
+    const j = Math.floor(rand()*(i+1));
+    const tmp = order[i]; order[i] = order[j]; order[j] = tmp;
+  }
+  const correctOriginalIdx = q.correct;
+  q.options = order.map(i=>q.options[i]);
+  q.correct = order.indexOf(correctOriginalIdx);
+}
+ROUNDS.forEach(r => r.questions.forEach(shuffleOptionsInPlace));
+
 const TOTAL_QUESTIONS = ROUNDS.reduce((sum,r)=>sum+r.questions.length, 0);
 
 const CLOSING_LINE = "Notice how this round was never about finding a clever trick — it was about reading the moment and responding with what's right for right now: inner resolve, unity, house visits, seeking guidance. That is exactly the logic behind tonight's Gosho: it is not that one teaching is simply better — each era needs the teaching suited to where people stand. Tonight, we'll see how the Daishonin makes that case.";
