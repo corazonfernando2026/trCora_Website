@@ -2,6 +2,9 @@
 <html lang="en">
 <head>
 <meta charset="UTF-8" />
+<meta http-equiv="Cache-Control" content="no-cache, no-store, must-revalidate" />
+<meta http-equiv="Pragma" content="no-cache" />
+<meta http-equiv="Expires" content="0" />
 <meta name="viewport" content="width=device-width, initial-scale=1.0, maximum-scale=1" />
 <title>Stars After Sunrise — A Right Tool, Right Time Game</title>
 <link rel="preconnect" href="https://fonts.googleapis.com">
@@ -2511,65 +2514,35 @@ const ROUNDS = [
   {
     id:'easy', title:'Round I', subtitle:'Easy — One Obvious Answer', gold:false,
     questions:[
-      { id:'e1', scenario:"A picture frame on the wall is crooked because the nail behind it worked itself loose — it needs a firm, precise tap to reseat it, not a full re-hang.", options:["Hammer","Screwdriver","Tape measure","Drill"], correct:0, note:"A screwdriver would help if this were about driving a screw, not tapping a nail back into place — wrong tool entirely. A tape measure helps you position a frame, not fix a loose nail. A drill is for making new holes, not reseating one that already exists. Only a hammer solves this exact problem: one firm, precise tap." },
-      { id:'e2', scenario:"Dark clouds roll in and it starts pouring rain right as you're heading out for a quick two-block walk to the bus.", options:["Umbrella","Raincoat","Poncho","Rain boots"], correct:0, note:"A raincoat or poncho would work too, but they take time to put on and you're leaving right now. Rain boots only protect your feet, leaving the rest of you exposed. An umbrella is the fastest way to stay dry, right away, for a short walk." },
-      { id:'e3', scenario:"The power just went out at night, and you need to walk carefully to the electrical panel to check the breaker.", options:["Flashlight","Phone camera flash","Candle","Lighter"], correct:0, note:"A phone flashlight could work in a pinch, but it's weaker and ties up your phone. A candle or lighter near an electrical panel is a real safety risk. A proper flashlight gives you steady, safe, hands-free light exactly when you need it." },
+      { id:'e1', scenario:"A picture frame on the wall is crooked because the nail behind it worked itself loose — it needs a firm, precise tap to reseat it, not a full re-hang.", options:["Screwdriver","Tape measure","Hammer","Drill"], correct:2, note:"A screwdriver would help if this were about driving a screw, not tapping a nail back into place — wrong tool entirely. A tape measure helps you position a frame, not fix a loose nail. A drill is for making new holes, not reseating one that already exists. Only a hammer solves this exact problem: one firm, precise tap." },
+      { id:'e2', scenario:"Dark clouds roll in and it starts pouring rain right as you're heading out for a quick two-block walk to the bus.", options:["Umbrella","Poncho","Raincoat","Rain boots"], correct:0, note:"A raincoat or poncho would work too, but they take time to put on and you're leaving right now. Rain boots only protect your feet, leaving the rest of you exposed. An umbrella is the fastest way to stay dry, right away, for a short walk." },
+      { id:'e3', scenario:"The power just went out at night, and you need to walk carefully to the electrical panel to check the breaker.", options:["Lighter","Candle","Phone camera flash","Flashlight"], correct:3, note:"A phone flashlight could work in a pinch, but it's weaker and ties up your phone. A candle or lighter near an electrical panel is a real safety risk. A proper flashlight gives you steady, safe, hands-free light exactly when you need it." },
     ]
   },
   {
     id:'average', title:'Round II', subtitle:'Average — More Than One Option Seems Plausible', gold:false,
     questions:[
-      { id:'a1', scenario:"A table leg is loose — you check, and the screw hole is stripped, so the screw just spins without tightening no matter how many times you turn it.", options:["Fill the hole and re-drive the screw","Use a slightly longer screw","Hammer the screw in the rest of the way","Wrap tape tightly around the leg"], correct:0, note:"A longer screw might reach fresh wood, but only if the leg is thick enough — often it's not, and forcing it can crack the wood. Hammering a screw isn't how it's designed to be driven. Tape is a temporary patch that won't hold real weight. Filling the stripped hole rebuilds material for the screw to actually grip — solving the real problem, not just the symptom." },
-      { id:'a2', scenario:"Your team has three genuinely strong ideas, but only five minutes to present — and the client has explicitly said they care most about fast turnaround.", options:["Present the idea that best matches fast turnaround","Present all 3 quickly, ranked by how good you think they are","Present the two fastest ideas and let the client choose","Present the most innovative one, since it will impress them most"], correct:0, note:"Presenting two options \"to let them choose\" sounds client-friendly, but with five minutes you risk explaining neither well — and the client already told you what matters. Ranking by what you personally think is best ignores their stated priority, and the most innovative idea might not even be the fastest. When someone tells you exactly what they need, the sharpest response is to give them that." },
-      { id:'a3', scenario:"A friend is upset and venting to you about something that already happened and can't be changed. They haven't asked for advice.", options:["Listen and reflect back what they're feeling","Ask gentle clarifying questions to understand the full situation","Immediately offer three ways they could have handled it differently","Validate their feelings, then pivot to solutions"], correct:0, note:"Clarifying questions can feel supportive, but with something already over, it can turn into fact-finding instead of comfort. Validating and then pivoting to solutions is common advice — but they haven't asked for solutions, and there's nothing left to fix. Reflecting their feelings back tells them they've been heard, which is exactly what venting needs." },
+      { id:'a1', scenario:"A table leg is loose — you check, and the screw hole is stripped, so the screw just spins without tightening no matter how many times you turn it.", options:["Hammer the screw in the rest of the way","Use a slightly longer screw","Fill the hole and re-drive the screw","Wrap tape tightly around the leg"], correct:2, note:"A longer screw might reach fresh wood, but only if the leg is thick enough — often it's not, and forcing it can crack the wood. Hammering a screw isn't how it's designed to be driven. Tape is a temporary patch that won't hold real weight. Filling the stripped hole rebuilds material for the screw to actually grip — solving the real problem, not just the symptom." },
+      { id:'a2', scenario:"Your team has three genuinely strong ideas, but only five minutes to present — and the client has explicitly said they care most about fast turnaround.", options:["Present the most innovative one, since it will impress them most","Present all 3 quickly, ranked by how good you think they are","Present the two fastest ideas and let the client choose","Present the idea that best matches fast turnaround"], correct:3, note:"Presenting two options \"to let them choose\" sounds client-friendly, but with five minutes you risk explaining neither well — and the client already told you what matters. Ranking by what you personally think is best ignores their stated priority, and the most innovative idea might not even be the fastest. When someone tells you exactly what they need, the sharpest response is to give them that." },
+      { id:'a3', scenario:"A friend is upset and venting to you about something that already happened and can't be changed. They haven't asked for advice.", options:["Immediately offer three ways they could have handled it differently","Listen and reflect back what they're feeling","Ask gentle clarifying questions to understand the full situation","Validate their feelings, then pivot to solutions"], correct:1, note:"Clarifying questions can feel supportive, but with something already over, it can turn into fact-finding instead of comfort. Validating and then pivoting to solutions is common advice — but they haven't asked for solutions, and there's nothing left to fix. Reflecting their feelings back tells them they've been heard, which is exactly what venting needs." },
     ]
   },
   {
     id:'difficult', title:'Round III', subtitle:'Difficult — Judgment, Faith & Reading the Moment', gold:true,
     questions:[
-      { id:'d1', scenario:"You're facing a big obstacle and starting to doubt yourself before you've even acted.", options:["Ichinen Sanzen — strengthen your inner resolve","Seek guidance from a senior in faith","Kosen-rufu","Daily practice (gongyo and daimoku)"], correct:0, note:"Seeking guidance and daily practice are both genuinely valuable here — but they're the how, not the deeper why. Ichinen Sanzen is the principle that explains why your inner state changes everything: a single life-moment already contains every possibility, including the strength to face what's ahead. Doubt shrinks the moment your inner resolve shifts." },
-      { id:'d2', scenario:"Two members in your chapter disagree sharply on how to plan an upcoming event, and the tension is affecting the whole group.", options:["Itai Doshin — unite as many in body, one in mind","Seek guidance from a senior in faith","Kosen-rufu","House visitation"], correct:0, note:"Seeking guidance might help you personally decide how to respond, and house visitation is more about checking in on someone one-on-one — neither is really about the group finding shared purpose. Itai Doshin means exactly this: many different people, many different opinions, moving as one toward the same goal. It's not about erasing the disagreement, but uniting despite it." },
-      { id:'d3', scenario:"A new member joins your district, feeling overwhelmed and unsure where to even begin with their practice.", options:["Simple, encouraging basics — not the deepest teaching all at once","House visitation to check on them personally","Seek guidance together with them","Teach daily practice immediately, in full detail"], correct:0, note:"House visitation and guidance are both good ongoing support, but they're not the immediate first step for someone brand new. Teaching the full depth of daily practice right away sounds thorough, but for someone already overwhelmed, more detail is the opposite of what helps. Starting with simple, encouraging basics meets them exactly where they are." },
-      { id:'d4', scenario:"A member hasn't shown up to activities in months, and you sense something is going on at home.", options:["House visitation","Seek guidance from a senior in faith about how to approach them","Wait for them to reach out when they're ready","Kosen-rufu-focused encouragement about the bigger mission"], correct:0, note:"Seeking guidance first isn't wrong, but it can become a delay when someone may need care now. Waiting for them to reach out respects their space, but if something is genuinely wrong, they may not reach out at all. Talking about the bigger mission is too abstract for someone in a personal, immediate struggle. House visitation is the direct, human step — showing up, in person, at their door." },
+      { id:'d1', scenario:"You're facing a big obstacle and starting to doubt yourself before you've even acted.", options:["Daily practice (gongyo and daimoku)","Seek guidance from a senior in faith","Ichinen Sanzen — strengthen your inner resolve","Kosen-rufu"], correct:2, note:"Seeking guidance and daily practice are both genuinely valuable here — but they're the how, not the deeper why. Ichinen Sanzen is the principle that explains why your inner state changes everything: a single life-moment already contains every possibility, including the strength to face what's ahead. Doubt shrinks the moment your inner resolve shifts." },
+      { id:'d2', scenario:"Two members in your chapter disagree sharply on how to plan an upcoming event, and the tension is affecting the whole group.", options:["House visitation","Kosen-rufu","Itai Doshin — unite as many in body, one in mind","Seek guidance from a senior in faith"], correct:2, note:"Seeking guidance might help you personally decide how to respond, and house visitation is more about checking in on someone one-on-one — neither is really about the group finding shared purpose. Itai Doshin means exactly this: many different people, many different opinions, moving as one toward the same goal. It's not about erasing the disagreement, but uniting despite it." },
+      { id:'d3', scenario:"A new member joins your district, feeling overwhelmed and unsure where to even begin with their practice.", options:["Seek guidance together with them","Teach daily practice immediately, in full detail","House visitation to check on them personally","Simple, encouraging basics — not the deepest teaching all at once"], correct:3, note:"House visitation and guidance are both good ongoing support, but they're not the immediate first step for someone brand new. Teaching the full depth of daily practice right away sounds thorough, but for someone already overwhelmed, more detail is the opposite of what helps. Starting with simple, encouraging basics meets them exactly where they are." },
+      { id:'d4', scenario:"A member hasn't shown up to activities in months, and you sense something is going on at home.", options:["Kosen-rufu-focused encouragement about the bigger mission","House visitation","Wait for them to reach out when they're ready","Seek guidance from a senior in faith about how to approach them"], correct:1, note:"Seeking guidance first isn't wrong, but it can become a delay when someone may need care now. Waiting for them to reach out respects their space, but if something is genuinely wrong, they may not reach out at all. Talking about the bigger mission is too abstract for someone in a personal, immediate struggle. House visitation is the direct, human step — showing up, in person, at their door." },
     ]
   },
 ];
 
-// Every question above was authored with the correct option listed first
-// (index 0, letter A) for readability. Shuffling here — once, keyed off each
-// question's own id — spreads the correct answer across all four letters
-// instead of it always sitting on A, without ever visibly "reshuffling" in
-// front of players: the seed is derived from the id, so the host's screen
-// and every player's phone independently land on the exact same order for
-// a given question, every time, with no sync needed.
-function hashSeed(str){
-  let h = 2166136261;
-  for(let i=0;i<str.length;i++){
-    h ^= str.charCodeAt(i);
-    h = Math.imul(h, 16777619);
-  }
-  return h >>> 0;
-}
-function seededRandom(seed){
-  return function(){
-    seed = (seed + 0x6D2B79F5) | 0;
-    let t = Math.imul(seed ^ (seed >>> 15), 1 | seed);
-    t = (t + Math.imul(t ^ (t >>> 7), 61 | t)) ^ t;
-    return ((t ^ (t >>> 14)) >>> 0) / 4294967296;
-  };
-}
-function shuffleOptionsInPlace(q){
-  const rand = seededRandom(hashSeed(q.id));
-  const order = q.options.map((_,i)=>i);
-  for(let i=order.length-1;i>0;i--){
-    const j = Math.floor(rand()*(i+1));
-    const tmp = order[i]; order[i] = order[j]; order[j] = tmp;
-  }
-  const correctOriginalIdx = q.correct;
-  q.options = order.map(i=>q.options[i]);
-  q.correct = order.indexOf(correctOriginalIdx);
-}
-ROUNDS.forEach(r => r.questions.forEach(shuffleOptionsInPlace));
+// The options for each question above are already arranged so the correct
+// answer isn't always letter A — this order is fixed directly in the data
+// (not computed at load time), so the host's screen and every player's
+// phone are guaranteed to always show options in the exact same order,
+// with no risk of two devices computing anything differently.
 
 const TOTAL_QUESTIONS = ROUNDS.reduce((sum,r)=>sum+r.questions.length, 0);
 
