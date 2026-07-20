@@ -2572,10 +2572,19 @@ function keyToPath(key){
   return key.split(':').map(encodeURIComponent).join('/');
 }
 
+// A stalled or blocked request should never freeze the UI — cap every
+// Firebase call so storeGet/storeSet always resolve within ~6 seconds.
+function fetchWithTimeout(url, options, ms){
+  ms = ms || 4000;
+  const controller = new AbortController();
+  const timer = setTimeout(()=>controller.abort(), ms);
+  return fetch(url, {...(options||{}), signal: controller.signal}).finally(()=>clearTimeout(timer));
+}
+
 async function storeGet(key){
   if(!isFirebaseConfigured()) return null;
   try{
-    const res = await fetch(`${FIREBASE_DB_URL}/${keyToPath(key)}.json`, {cache:'no-store'});
+    const res = await fetchWithTimeout(`${FIREBASE_DB_URL}/${keyToPath(key)}.json`, {cache:'no-store'});
     if(!res.ok) return null;
     return await res.json();
   }catch(e){ return null; }
@@ -2583,7 +2592,7 @@ async function storeGet(key){
 async function storeSet(key, value){
   if(!isFirebaseConfigured()) return;
   try{
-    await fetch(`${FIREBASE_DB_URL}/${keyToPath(key)}.json`, {
+    await fetchWithTimeout(`${FIREBASE_DB_URL}/${keyToPath(key)}.json`, {
       method:'PUT',
       headers:{'Content-Type':'application/json'},
       body: JSON.stringify(value)
@@ -2595,7 +2604,7 @@ async function storeSet(key, value){
 async function storeSetField(baseKey, field, value){
   if(!isFirebaseConfigured()) return;
   try{
-    await fetch(`${FIREBASE_DB_URL}/${keyToPath(baseKey)}/${encodeURIComponent(field)}.json`, {
+    await fetchWithTimeout(`${FIREBASE_DB_URL}/${keyToPath(baseKey)}/${encodeURIComponent(field)}.json`, {
       method:'PUT',
       headers:{'Content-Type':'application/json'},
       body: JSON.stringify(value)
@@ -2619,9 +2628,11 @@ async function getSession(){ return await storeGet(SESSION_KEY); }
 async function createNewSession(){
   const id = 's'+Date.now().toString(36)+Math.random().toString(36).slice(2,6);
   const session = { id, status:'active', startedAt: Date.now() };
-  await storeSet(SESSION_KEY, session);
-  await storeSet(stateKey(id), defaultState());
-  await storeSet(playersKey(id), {});
+  await Promise.all([
+    storeSet(SESSION_KEY, session),
+    storeSet(stateKey(id), defaultState()),
+    storeSet(playersKey(id), {})
+  ]);
   return session;
 }
 
@@ -2723,6 +2734,32 @@ function progressBarHTML(state){
     </div>`;
 }
 
+function sunSVG(big){
+  const size = big ? 190 : 120;
+  const c = size/2;
+  const r = size*0.22;
+  const rayInner = r*1.35;
+  const rayOuter = r*2.05;
+  const rays = Array.from({length:12}).map((_,i)=>{
+    const a = (i*30) * Math.PI/180;
+    const x1 = c + Math.cos(a)*rayInner, y1 = c + Math.sin(a)*rayInner;
+    const x2 = c + Math.cos(a)*rayOuter, y2 = c + Math.sin(a)*rayOuter;
+    return `<line x1="${x1.toFixed(1)}" y1="${y1.toFixed(1)}" x2="${x2.toFixed(1)}" y2="${y2.toFixed(1)}" stroke="var(--gold)" stroke-width="${big?3:2.2}" stroke-linecap="round" opacity="${i%2===0?0.9:0.5}"/>`;
+  }).join('');
+  return `
+  <svg class="sun-icon" viewBox="0 0 ${size} ${size}" width="${size}" height="${size}">
+    <defs>
+      <radialGradient id="sunGlow${big?'Big':'Sm'}" cx="50%" cy="50%" r="50%">
+        <stop offset="0%" stop-color="var(--gold-bright)"/>
+        <stop offset="100%" stop-color="var(--gold)"/>
+      </radialGradient>
+    </defs>
+    <circle cx="${c}" cy="${c}" r="${r*1.9}" fill="var(--gold)" opacity="0.10"/>
+    ${rays}
+    <circle cx="${c}" cy="${c}" r="${r}" fill="url(#sunGlow${big?'Big':'Sm'})"/>
+  </svg>`;
+}
+
 function mandalaSVG(pct, label, big, showPct){
   showPct = showPct !== false;
   const size = big ? 190 : 120;
@@ -2750,7 +2787,7 @@ function renderLanding(){
       ${!isFirebaseConfigured() ? `<div class="setup-warning"><strong>One-time setup needed:</strong> this game needs a free Firebase Realtime Database so phones and the host screen can share votes and the player list. Open <code>index.html</code> and follow the instructions above the <code>FIREBASE_DB_URL</code> constant (search for "STORAGE HELPERS"), then paste your database URL in and republish. Until then, joining and voting won't sync between devices.</div>` : ''}
       <div style="text-align:center; padding-top:20px;">
         <div class="eyebrow">A right-tool, right-time voting game</div>
-        <div class="mandala-wrap">${mandalaSVG(100,null, true, false)}</div>
+        <div class="mandala-wrap">${sunSVG(true)}</div>
         <h1 class="hero-title display">STARS AFTER SUNRISE</h1>
         <div class="eyebrow" style="color:rgba(246,241,228,0.6); letter-spacing:.1em; margin-bottom:14px;">a Right Tool, Right Time game · many in body · one mind</div>
         <p class="hero-sub">Everyone votes on their own phone. Points are earned together — the more of you who land on the right answer, the higher the group's Oneness Score climbs.</p>
@@ -2771,7 +2808,18 @@ function renderLanding(){
       <footer>Stars After Sunrise · a Right Tool, Right Time game</footer>
     </div>
   `));
-  document.getElementById('btn-host').onclick = ()=> startHost();
+  document.getElementById('btn-host').onclick = async (e)=>{
+    const btn = e.currentTarget;
+    btn.disabled = true;
+    btn.textContent = 'Starting…';
+    try{
+      await startHost();
+    }catch(err){
+      btn.disabled = false;
+      btn.textContent = 'Start hosting';
+      alert('Something went wrong starting the game. Please check your internet connection and try again.');
+    }
+  };
   document.getElementById('btn-player').onclick = ()=> { history.replaceState(null,'', joinUrl()); startPlayer(); };
   document.getElementById('btn-howto').onclick = ()=> renderHowTo();
 }
@@ -3069,7 +3117,7 @@ function renderJoin(){
   app.appendChild(el(`
     <div class="player-shell">
       <div style="text-align:center; padding-top:40px;">
-        <div class="mandala-wrap">${mandalaSVG(100,'JOIN', true, false)}</div>
+        <div class="mandala-wrap">${sunSVG(true)}</div>
         <h1 class="display" style="font-size:32px; margin:8px 0 4px;">STARS AFTER SUNRISE</h1>
         <p class="hero-sub">Type your name to add your vote to the group.</p>
       </div>
@@ -3268,34 +3316,34 @@ function startMusic(){
   const master = ctx.createGain();
   master.gain.value = 0.0;
   master.connect(ctx.destination);
-  master.gain.linearRampToValueAtTime(0.11, ctx.currentTime + 3);
+  master.gain.linearRampToValueAtTime(0.08, ctx.currentTime + 6);
 
   const filter = ctx.createBiquadFilter();
   filter.type = 'lowpass';
-  filter.frequency.value = 900;
+  filter.frequency.value = 520;
   filter.connect(master);
 
-  // a warm, open sunrise chord (C3 - E3 - G3), softly detuned for a pad-like shimmer
-  const freqs = [130.81, 164.81, 196.00];
+  // a slow, open drone — root + fifth + octave, not a bright triad, kept low and spacious
+  const freqs = [98.00, 146.83, 196.00]; // G2, D3, G3
   const oscs = freqs.map((f, i)=>{
     const o = ctx.createOscillator();
-    o.type = 'sine';
+    o.type = 'triangle';
     o.frequency.value = f;
-    o.detune.value = (i-1)*6;
+    o.detune.value = (i-1)*4;
     const g = ctx.createGain();
     g.gain.value = 0.0;
-    g.gain.linearRampToValueAtTime(0.22, ctx.currentTime + 4 + i);
+    g.gain.linearRampToValueAtTime(0.16, ctx.currentTime + 7 + i*1.5);
     o.connect(g);
     g.connect(filter);
     o.start();
     return {o,g};
   });
 
-  // slow LFO so the tone breathes gently rather than droning flatly
+  // very slow LFO — a gentle, barely-there breathing motion, not a pulse
   const lfo = ctx.createOscillator();
-  lfo.frequency.value = 0.045;
+  lfo.frequency.value = 0.02;
   const lfoGain = ctx.createGain();
-  lfoGain.gain.value = 220;
+  lfoGain.gain.value = 90;
   lfo.connect(lfoGain);
   lfoGain.connect(filter.frequency);
   lfo.start();
@@ -3308,9 +3356,9 @@ function startMusic(){
 function scheduleChimes(){
   clearTimeout(chimeTimer);
   if(!musicPlaying || !audioCtx) return;
-  const scale = [523.25, 587.33, 659.25, 783.99, 880.00]; // pentatonic, sunrise-bright
+  const scale = [392.00, 440.00, 523.25, 587.33]; // low, soft — a few calm notes, not a bright run
   playChime(scale[Math.floor(Math.random()*scale.length)]);
-  chimeTimer = setTimeout(scheduleChimes, 5500 + Math.random()*6000);
+  chimeTimer = setTimeout(scheduleChimes, 11000 + Math.random()*9000);
 }
 
 function playChime(freq){
@@ -3321,12 +3369,12 @@ function playChime(freq){
   o.frequency.value = freq;
   const g = ctx.createGain();
   g.gain.value = 0;
-  g.gain.linearRampToValueAtTime(0.045, ctx.currentTime + 0.05);
-  g.gain.exponentialRampToValueAtTime(0.0001, ctx.currentTime + 3);
+  g.gain.linearRampToValueAtTime(0.025, ctx.currentTime + 0.4);
+  g.gain.exponentialRampToValueAtTime(0.0001, ctx.currentTime + 5);
   o.connect(g);
   g.connect(musicNodes.master);
   o.start();
-  o.stop(ctx.currentTime + 3);
+  o.stop(ctx.currentTime + 5);
 }
 
 function stopMusic(){
