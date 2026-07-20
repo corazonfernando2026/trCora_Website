@@ -3,28 +3,25 @@
 <head>
 <meta charset="UTF-8" />
 <meta name="viewport" content="width=device-width, initial-scale=1.0, maximum-scale=1" />
-<title>Stars After Sunrise — A Right Tool, Right Time Game</title>
+<title>Itai Doshin — The Oneness Game</title>
 <link rel="preconnect" href="https://fonts.googleapis.com">
 <link href="https://fonts.googleapis.com/css2?family=Fraunces:opsz,wght@9..144,400;9..144,600;9..144,700&family=Work+Sans:wght@400;500;600;700&family=JetBrains+Mono:wght@400;600&display=swap" rel="stylesheet">
 <style>
   :root{
-    --navy-deep:#04122c;
-    --navy:#0a2a63;
-    --navy-soft:#123a7d;
+    --navy-deep:#0a1129;
+    --navy:#121b3d;
+    --navy-soft:#1c2a54;
     --ivory:#f6f1e4;
-    --gold:#e8b923;
-    --gold-bright:#ffd23f;
+    --gold:#d4af6a;
+    --gold-bright:#f2cd8c;
     --jade:#5a8a70;
-    --maroon:#b3272d;
+    --maroon:#a4524f;
     --line: rgba(246,241,228,0.14);
   }
   *{box-sizing:border-box;}
   html,body{margin:0;padding:0;}
   body{
-    background:
-      radial-gradient(ellipse 900px 480px at 50% -6%, rgba(255,180,60,0.38) 0%, rgba(232,185,35,0.16) 32%, rgba(232,185,35,0) 65%),
-      linear-gradient(180deg, #3d2410 0%, #5a3418 8%, var(--navy) 26%, var(--navy-deep) 62%, #050d20 100%);
-    background-attachment: fixed;
+    background: radial-gradient(ellipse at top, var(--navy) 0%, var(--navy-deep) 70%);
     color:var(--ivory);
     font-family:'Work Sans', sans-serif;
     min-height:100vh;
@@ -109,10 +106,6 @@
   .round-tab.done::after{ content:' ✓'; }
 
   .qcounter{ font-size:12px; color:rgba(246,241,228,0.55); }
-  .progress-wrap{ margin:10px 0 4px; }
-  .progress-label{ font-size:11px; color:rgba(246,241,228,0.55); text-transform:uppercase; letter-spacing:.08em; margin-bottom:5px; display:flex; justify-content:space-between; }
-  .progress-track{ width:100%; height:8px; border-radius:99px; background:var(--navy); border:1px solid var(--line); overflow:hidden; }
-  .progress-fill{ height:100%; border-radius:99px; background:linear-gradient(90deg, var(--gold) 0%, var(--gold-bright) 100%); transition:width .4s ease; }
 
   .scenario-card{ background:var(--navy-soft); border:1px solid var(--line); border-radius:20px; padding:26px; margin-top:14px; }
   .scenario-title{ font-family:'Fraunces', serif; font-size:15px; color:var(--gold); margin:0 0 10px; }
@@ -157,17 +150,6 @@
   .join-input.error{ border-color:var(--maroon); }
   .setup-warning{ background:rgba(164,82,79,0.18); border:1px solid var(--maroon); color:#f0d3d2; font-size:13px; line-height:1.6; padding:14px 16px; border-radius:12px; margin:0 0 20px; text-align:left; }
   .setup-warning code{ background:rgba(0,0,0,0.25); padding:1px 5px; border-radius:5px; font-size:12px; }
-  .music-toggle{
-    position:fixed; bottom:16px; right:16px; z-index:9999;
-    width:46px; height:46px; border-radius:50%;
-    background:var(--navy-soft); border:1px solid var(--gold);
-    color:var(--gold); font-size:19px; cursor:pointer;
-    display:flex; align-items:center; justify-content:center;
-    box-shadow:0 4px 14px rgba(0,0,0,0.4);
-    transition: background .2s, color .2s, transform .2s;
-  }
-  .music-toggle:hover{ background:var(--gold); color:var(--navy-deep); transform:scale(1.05); }
-  .music-toggle.playing{ border-color:var(--gold-bright); }
 
   .timer-ring-wrap{ display:flex; align-items:center; gap:12px; }
 
@@ -2504,33 +2486,43 @@ const ROUNDS = [
   {
     id:'easy', title:'Round I', subtitle:'Easy — One Obvious Answer', gold:false,
     questions:[
-      { id:'e1', scenario:"A picture frame on the wall is crooked because the nail behind it worked itself loose — it needs a firm, precise tap to reseat it, not a full re-hang.", options:["Hammer","Screwdriver","Tape measure","Drill"], correct:0, note:"A screwdriver would help if this were about driving a screw, not tapping a nail back into place — wrong tool entirely. A tape measure helps you position a frame, not fix a loose nail. A drill is for making new holes, not reseating one that already exists. Only a hammer solves this exact problem: one firm, precise tap." },
-      { id:'e2', scenario:"Dark clouds roll in and it starts pouring rain right as you're heading out for a quick two-block walk to the bus.", options:["Umbrella","Raincoat","Poncho","Rain boots"], correct:0, note:"A raincoat or poncho would work too, but they take time to put on and you're leaving right now. Rain boots only protect your feet, leaving the rest of you exposed. An umbrella is the fastest way to stay dry, right away, for a short walk." },
-      { id:'e3', scenario:"The power just went out at night, and you need to walk carefully to the electrical panel to check the breaker.", options:["Flashlight","Phone camera flash","Candle","Lighter"], correct:0, note:"A phone flashlight could work in a pinch, but it's weaker and ties up your phone. A candle or lighter near an electrical panel is a real safety risk. A proper flashlight gives you steady, safe, hands-free light exactly when you need it." },
+      { id:'e1', scenario:"A picture frame on the wall is crooked and the nail needs a gentle tap back into place.", options:["Hammer","Screwdriver","Pliers","Tape measure"], correct:0, note:"When the fix is direct and physical, you reach for the direct tool. No overthinking required." },
+      { id:'e2', scenario:"It starts pouring rain and you need to walk two blocks to catch the bus.", options:["Umbrella","Sunglasses","Fan","Gloves"], correct:0, note:"The moment tells you exactly what it needs." },
+      { id:'e3', scenario:"The lights just went out at night and you need to find the circuit breaker.", options:["Flashlight","Magnifying glass","Umbrella","Stapler"], correct:0, note:"Darkness calls for light. Simple as that." },
+      { id:'e4', scenario:"You get a small cut on your finger while chopping vegetables.", options:["Band-aid","Ice pack","Hammer","Stapler"], correct:0, note:"Small wound, small remedy — matched to the scale of the problem." },
+      { id:'e5', scenario:"You need to cut a piece of paper neatly for a craft project.", options:["Scissors","Screwdriver","Hammer","Wrench"], correct:0, note:"Some tools are built for exactly one kind of moment — and this is theirs." },
     ]
   },
   {
     id:'average', title:'Round II', subtitle:'Average — More Than One Option Seems Plausible', gold:false,
     questions:[
-      { id:'a1', scenario:"A table leg is loose — you check, and the screw hole is stripped, so the screw just spins without tightening no matter how many times you turn it.", options:["Fill the hole and re-drive the screw","Use a slightly longer screw","Hammer the screw in the rest of the way","Wrap tape tightly around the leg"], correct:0, note:"A longer screw might reach fresh wood, but only if the leg is thick enough — often it's not, and forcing it can crack the wood. Hammering a screw isn't how it's designed to be driven. Tape is a temporary patch that won't hold real weight. Filling the stripped hole rebuilds material for the screw to actually grip — solving the real problem, not just the symptom." },
-      { id:'a2', scenario:"Your team has three genuinely strong ideas, but only five minutes to present — and the client has explicitly said they care most about fast turnaround.", options:["Present the idea that best matches fast turnaround","Present all 3 quickly, ranked by how good you think they are","Present the two fastest ideas and let the client choose","Present the most innovative one, since it will impress them most"], correct:0, note:"Presenting two options \"to let them choose\" sounds client-friendly, but with five minutes you risk explaining neither well — and the client already told you what matters. Ranking by what you personally think is best ignores their stated priority, and the most innovative idea might not even be the fastest. When someone tells you exactly what they need, the sharpest response is to give them that." },
-      { id:'a3', scenario:"A friend is upset and venting to you about something that already happened and can't be changed. They haven't asked for advice.", options:["Listen and reflect back what they're feeling","Ask gentle clarifying questions to understand the full situation","Immediately offer three ways they could have handled it differently","Validate their feelings, then pivot to solutions"], correct:0, note:"Clarifying questions can feel supportive, but with something already over, it can turn into fact-finding instead of comfort. Validating and then pivoting to solutions is common advice — but they haven't asked for solutions, and there's nothing left to fix. Reflecting their feelings back tells them they've been heard, which is exactly what venting needs." },
+      { id:'a1', scenario:"A table leg is loose — the screw is there, but it keeps spinning without tightening.", options:["Add wood glue and re-tighten","Hammer it in","Ignore it","Tape it down"], correct:0, note:"A screwdriver alone won't fix a stripped hole. The right response often needs more than the obvious tool." },
+      { id:'a2', scenario:"Your team has 3 strong ideas but only 5 minutes to present. What do you do?", options:["Pick the one idea that best fits the audience's actual need","Present all 3 quickly","Present the most complex one to impress","Let one person decide alone"], correct:0, note:"Strength isn't the only measure — fit for the moment is." },
+      { id:'a3', scenario:"Your laptop is overheating during an important video call.", options:["Pause, prop it up for airflow, and continue","Restart it mid-call","Put it in the fridge","Ignore it and hope it cools down"], correct:0, note:"A calm, proportionate response beats a drastic or passive one." },
+      { id:'a4', scenario:"A friend is upset and venting to you. What's most helpful right now?", options:["Listen first, offer advice only if asked","Immediately give solutions","Change the subject","Tell them to stop overreacting"], correct:0, note:"What looks unhelpful (just listening) is often exactly the right tool for this moment." },
+      { id:'a5', scenario:"A new hire keeps asking basic questions during a busy week.", options:["Give quick, clear basics now; deeper training later","Hand them the full manual and walk away","Tell them to figure it out","Answer with as little detail as possible"], correct:0, note:"Meeting someone at their actual level, not the ideal level, is its own skill." },
     ]
   },
   {
     id:'difficult', title:'Round III', subtitle:'Difficult — Judgment, Faith & Reading the Moment', gold:true,
     questions:[
-      { id:'d1', scenario:"You're facing a big obstacle and starting to doubt yourself before you've even acted.", options:["Ichinen Sanzen — strengthen your inner resolve","Seek guidance from a senior in faith","Kosen-rufu","Daily practice (gongyo and daimoku)"], correct:0, note:"Seeking guidance and daily practice are both genuinely valuable here — but they're the how, not the deeper why. Ichinen Sanzen is the principle that explains why your inner state changes everything: a single life-moment already contains every possibility, including the strength to face what's ahead. Doubt shrinks the moment your inner resolve shifts." },
-      { id:'d2', scenario:"Two members in your chapter disagree sharply on how to plan an upcoming event, and the tension is affecting the whole group.", options:["Itai Doshin — unite as many in body, one in mind","Seek guidance from a senior in faith","Kosen-rufu","House visitation"], correct:0, note:"Seeking guidance might help you personally decide how to respond, and house visitation is more about checking in on someone one-on-one — neither is really about the group finding shared purpose. Itai Doshin means exactly this: many different people, many different opinions, moving as one toward the same goal. It's not about erasing the disagreement, but uniting despite it." },
-      { id:'d3', scenario:"A new member joins your district, feeling overwhelmed and unsure where to even begin with their practice.", options:["Simple, encouraging basics — not the deepest teaching all at once","House visitation to check on them personally","Seek guidance together with them","Teach daily practice immediately, in full detail"], correct:0, note:"House visitation and guidance are both good ongoing support, but they're not the immediate first step for someone brand new. Teaching the full depth of daily practice right away sounds thorough, but for someone already overwhelmed, more detail is the opposite of what helps. Starting with simple, encouraging basics meets them exactly where they are." },
-      { id:'d4', scenario:"A member hasn't shown up to activities in months, and you sense something is going on at home.", options:["House visitation","Seek guidance from a senior in faith about how to approach them","Wait for them to reach out when they're ready","Kosen-rufu-focused encouragement about the bigger mission"], correct:0, note:"Seeking guidance first isn't wrong, but it can become a delay when someone may need care now. Waiting for them to reach out respects their space, but if something is genuinely wrong, they may not reach out at all. Talking about the bigger mission is too abstract for someone in a personal, immediate struggle. House visitation is the direct, human step — showing up, in person, at their door." },
+      { id:'d1', scenario:"Two colleagues are in a tense disagreement in a meeting. Everyone's watching.", options:["Pause the discussion, address it privately after","Take a side immediately","Let them argue it out publicly","Change the topic and hope it resolves itself"], correct:0, note:"Reading the room matters as much as reading the problem." },
+      { id:'d2', scenario:"A friend going through a hard time keeps getting the same advice from everyone — advice that helped you once, but doesn't fit their situation.", options:["Ask what they actually need before offering anything","Repeat the advice that worked for you","Say nothing at all","Insist your way is the only way"], correct:0, note:"What was right for you once isn't automatically right for someone else, now." },
+      { id:'d3', scenario:"Your team can take a slow, thorough approach or a fast, \"good enough\" approach — and the deadline is tomorrow.", options:["Match the approach to what tomorrow's deadline actually requires","Always choose thorough, no matter what","Always choose fast, no matter what","Delay the deadline without asking"], correct:0, note:"Neither approach is superior in the abstract — only in context." },
+      { id:'d4', scenario:"A close friend asks for your honest opinion on a big decision they've clearly already made emotionally.", options:["Be honest, but choose your timing and tone with care","Say only what they want to hear","Refuse to answer","Bluntly list everything wrong with their plan"], correct:0, note:"Honesty and care aren't opposites — the skill is holding both at once." },
+      { id:'d5', scenario:"A new member joins your district, feeling overwhelmed and unsure where to even begin with their practice.", options:["Simple, encouraging basics — not the deepest teaching all at once","A deep philosophical debate right away","A firm refutation of their old beliefs","Silence, let them figure it out alone"], correct:0, note:"Depth given too soon can overwhelm rather than help. Meet people where they stand." },
+      { id:'d6', scenario:"You're facing a big obstacle and starting to doubt yourself before you've even acted.", options:["Ichinen Sanzen — strengthen your inner resolve","Itai Doshin","House visitation","Kosen-rufu"], correct:0, note:"Ichinen Sanzen begins inside you — the single life-moment holding all worlds. The obstacle often shrinks the moment your determination grows." },
+      { id:'d7', scenario:"Two members in your chapter disagree sharply on how to plan an upcoming event, and the tension is affecting the whole group.", options:["Itai Doshin — unite as many in body, one in mind","Ichinen Sanzen","Study and read the Gosho","Daily practice"], correct:0, note:"Itai Doshin doesn't mean sameness — it means many different people moving toward one shared purpose." },
+      { id:'d8', scenario:"A member hasn't shown up to activities in months, and you sense something is going on at home.", options:["House visitation","Kosen-rufu","Seek guidance","Ichinen Sanzen"], correct:0, note:"Some care can only be delivered in person, at someone's own door." },
+      { id:'d9', scenario:"You keep rereading a section of a Gosho but can't quite connect it to what you're facing in daily life.", options:["Study and read the Gosho more deeply","Itai Doshin","House visitation","Kosen-rufu"], correct:0, note:"Understanding often arrives on a second or third reading, applied slowly against real life." },
+      { id:'d10', scenario:"No matter what happens each day — good or bad — you want your faith to stay consistent and unshaken.", options:["Daily practice (gongyo and daimoku)","Seek guidance","House visitation","Kosen-rufu"], correct:0, note:"Consistency is built in the ordinary, repeated moments — not the dramatic ones." },
+      { id:'d11', scenario:"You're facing a major life decision and feel unsure which direction reflects your true wish and your mission.", options:["Seek guidance from a senior in faith","Itai Doshin","Kosen-rufu","Ichinen Sanzen"], correct:0, note:"Guidance doesn't replace your own decision — it helps you see it more clearly." },
+      { id:'d12', scenario:"Your chapter wants every activity you do to ultimately contribute to lasting peace and happiness — not just for members, but for society as a whole.", options:["Kosen-rufu","House visitation","Study and read the Gosho","Ichinen Sanzen"], correct:0, note:"Kosen-rufu is the widest lens — every smaller action pointed at the largest possible good." },
     ]
   },
 ];
 
-const TOTAL_QUESTIONS = ROUNDS.reduce((sum,r)=>sum+r.questions.length, 0);
-
-const CLOSING_LINE = "Notice how this round was never about finding a clever trick — it was about reading the moment and responding with what's right for right now: inner resolve, unity, house visits, seeking guidance. That is exactly the logic behind tonight's Gosho: it is not that one teaching is simply better — each era needs the teaching suited to where people stand. Tonight, we'll see how the Daishonin makes that case.";
+const CLOSING_LINE = "Notice how this round was never about finding a clever trick — it was about reading the moment and responding with what's right for right now: determination, unity, guidance, home visits, study, daily practice, kosen-rufu. That is exactly the logic behind tonight's Gosho: it is not that one teaching is simply better — each era needs the teaching suited to where people stand. Tonight, we'll see how the Daishonin makes that case.";
 
 const VOTE_SECONDS = 20;
 
@@ -2572,19 +2564,10 @@ function keyToPath(key){
   return key.split(':').map(encodeURIComponent).join('/');
 }
 
-// A stalled or blocked request should never freeze the UI — cap every
-// Firebase call so storeGet/storeSet always resolve within ~6 seconds.
-function fetchWithTimeout(url, options, ms){
-  ms = ms || 4000;
-  const controller = new AbortController();
-  const timer = setTimeout(()=>controller.abort(), ms);
-  return fetch(url, {...(options||{}), signal: controller.signal}).finally(()=>clearTimeout(timer));
-}
-
 async function storeGet(key){
   if(!isFirebaseConfigured()) return null;
   try{
-    const res = await fetchWithTimeout(`${FIREBASE_DB_URL}/${keyToPath(key)}.json`, {cache:'no-store'});
+    const res = await fetch(`${FIREBASE_DB_URL}/${keyToPath(key)}.json`, {cache:'no-store'});
     if(!res.ok) return null;
     return await res.json();
   }catch(e){ return null; }
@@ -2592,7 +2575,7 @@ async function storeGet(key){
 async function storeSet(key, value){
   if(!isFirebaseConfigured()) return;
   try{
-    await fetchWithTimeout(`${FIREBASE_DB_URL}/${keyToPath(key)}.json`, {
+    await fetch(`${FIREBASE_DB_URL}/${keyToPath(key)}.json`, {
       method:'PUT',
       headers:{'Content-Type':'application/json'},
       body: JSON.stringify(value)
@@ -2604,7 +2587,7 @@ async function storeSet(key, value){
 async function storeSetField(baseKey, field, value){
   if(!isFirebaseConfigured()) return;
   try{
-    await fetchWithTimeout(`${FIREBASE_DB_URL}/${keyToPath(baseKey)}/${encodeURIComponent(field)}.json`, {
+    await fetch(`${FIREBASE_DB_URL}/${keyToPath(baseKey)}/${encodeURIComponent(field)}.json`, {
       method:'PUT',
       headers:{'Content-Type':'application/json'},
       body: JSON.stringify(value)
@@ -2628,11 +2611,9 @@ async function getSession(){ return await storeGet(SESSION_KEY); }
 async function createNewSession(){
   const id = 's'+Date.now().toString(36)+Math.random().toString(36).slice(2,6);
   const session = { id, status:'active', startedAt: Date.now() };
-  await Promise.all([
-    storeSet(SESSION_KEY, session),
-    storeSet(stateKey(id), defaultState()),
-    storeSet(playersKey(id), {})
-  ]);
+  await storeSet(SESSION_KEY, session);
+  await storeSet(stateKey(id), defaultState());
+  await storeSet(playersKey(id), {});
   return session;
 }
 
@@ -2717,51 +2698,7 @@ function buildQRSvg(text, opts){
     + '</svg>';
 }
 
-function overallProgress(state){
-  let done = 0;
-  for(let i=0;i<state.roundIdx;i++){ done += ROUNDS[i].questions.length; }
-  done += state.qIdx;
-  const total = TOTAL_QUESTIONS;
-  const current = Math.min(done+1, total);
-  return { current, total, pct: Math.round((done/total)*100) };
-}
-function progressBarHTML(state){
-  const { current, total, pct } = overallProgress(state);
-  return `
-    <div class="progress-wrap">
-      <div class="progress-label"><span>Question ${current} of ${total}</span><span>${pct}% complete</span></div>
-      <div class="progress-track"><div class="progress-fill" style="width:${pct}%"></div></div>
-    </div>`;
-}
-
-function sunSVG(big){
-  const size = big ? 190 : 120;
-  const c = size/2;
-  const r = size*0.22;
-  const rayInner = r*1.35;
-  const rayOuter = r*2.05;
-  const rays = Array.from({length:12}).map((_,i)=>{
-    const a = (i*30) * Math.PI/180;
-    const x1 = c + Math.cos(a)*rayInner, y1 = c + Math.sin(a)*rayInner;
-    const x2 = c + Math.cos(a)*rayOuter, y2 = c + Math.sin(a)*rayOuter;
-    return `<line x1="${x1.toFixed(1)}" y1="${y1.toFixed(1)}" x2="${x2.toFixed(1)}" y2="${y2.toFixed(1)}" stroke="var(--gold)" stroke-width="${big?3:2.2}" stroke-linecap="round" opacity="${i%2===0?0.9:0.5}"/>`;
-  }).join('');
-  return `
-  <svg class="sun-icon" viewBox="0 0 ${size} ${size}" width="${size}" height="${size}">
-    <defs>
-      <radialGradient id="sunGlow${big?'Big':'Sm'}" cx="50%" cy="50%" r="50%">
-        <stop offset="0%" stop-color="var(--gold-bright)"/>
-        <stop offset="100%" stop-color="var(--gold)"/>
-      </radialGradient>
-    </defs>
-    <circle cx="${c}" cy="${c}" r="${r*1.9}" fill="var(--gold)" opacity="0.10"/>
-    ${rays}
-    <circle cx="${c}" cy="${c}" r="${r}" fill="url(#sunGlow${big?'Big':'Sm'})"/>
-  </svg>`;
-}
-
-function mandalaSVG(pct, label, big, showPct){
-  showPct = showPct !== false;
+function mandalaSVG(pct, label, big){
   const size = big ? 190 : 120;
   const r = big ? 78 : 48;
   const c = 2*Math.PI*r;
@@ -2773,7 +2710,7 @@ function mandalaSVG(pct, label, big, showPct){
     </g>
     <circle class="track" cx="${size/2}" cy="${size/2}" r="${r}"/>
     <circle class="progress" cx="${size/2}" cy="${size/2}" r="${r}" stroke-dasharray="${c}" stroke-dashoffset="${offset}"/>
-    ${showPct ? `<text x="50%" y="50%" text-anchor="middle" dy="8" class="mandala-center">${Math.round(pct)}%</text>` : ''}
+    <text x="50%" y="50%" text-anchor="middle" dy="8" class="mandala-center">${Math.round(pct)}%</text>
     ${label? `<text x="50%" y="${size-6}" text-anchor="middle" class="mandala-label">${label}</text>`:''}
   </svg>`;
 }
@@ -2787,9 +2724,9 @@ function renderLanding(){
       ${!isFirebaseConfigured() ? `<div class="setup-warning"><strong>One-time setup needed:</strong> this game needs a free Firebase Realtime Database so phones and the host screen can share votes and the player list. Open <code>index.html</code> and follow the instructions above the <code>FIREBASE_DB_URL</code> constant (search for "STORAGE HELPERS"), then paste your database URL in and republish. Until then, joining and voting won't sync between devices.</div>` : ''}
       <div style="text-align:center; padding-top:20px;">
         <div class="eyebrow">A right-tool, right-time voting game</div>
-        <div class="mandala-wrap">${sunSVG(true)}</div>
-        <h1 class="hero-title display">STARS AFTER SUNRISE</h1>
-        <div class="eyebrow" style="color:rgba(246,241,228,0.6); letter-spacing:.1em; margin-bottom:14px;">a Right Tool, Right Time game · many in body · one mind</div>
+        <div class="mandala-wrap">${mandalaSVG(38,'ONENESS', true)}</div>
+        <h1 class="hero-title display">ITAI DOSHIN</h1>
+        <div class="eyebrow" style="color:rgba(246,241,228,0.6); letter-spacing:.1em; margin-bottom:14px;">many in body · one mind</div>
         <p class="hero-sub">Everyone votes on their own phone. Points are earned together — the more of you who land on the right answer, the higher the group's Oneness Score climbs.</p>
       </div>
       <div class="role-grid">
@@ -2805,21 +2742,10 @@ function renderLanding(){
         </div>
       </div>
       <button class="howto-link" id="btn-howto">How does this work?</button>
-      <footer>Stars After Sunrise · a Right Tool, Right Time game</footer>
+      <footer>Itai Doshin · a study-night companion game</footer>
     </div>
   `));
-  document.getElementById('btn-host').onclick = async (e)=>{
-    const btn = e.currentTarget;
-    btn.disabled = true;
-    btn.textContent = 'Starting…';
-    try{
-      await startHost();
-    }catch(err){
-      btn.disabled = false;
-      btn.textContent = 'Start hosting';
-      alert('Something went wrong starting the game. Please check your internet connection and try again.');
-    }
-  };
+  document.getElementById('btn-host').onclick = ()=> startHost();
   document.getElementById('btn-player').onclick = ()=> { history.replaceState(null,'', joinUrl()); startPlayer(); };
   document.getElementById('btn-howto').onclick = ()=> renderHowTo();
 }
@@ -2831,7 +2757,7 @@ function renderHowTo(){
       <div class="eyebrow">How to play</div>
       <h1 class="display" style="font-size:34px; margin:6px 0 16px;">Reading the moment, together</h1>
       <div class="card">
-        <p style="font-size:14.5px; line-height:1.6; color:rgba(246,241,228,0.8); margin:0;">Ten scenarios, three rounds, one question underneath all of them: what actually fits <em>this</em> moment? The last round folds in real practice — Ichinen Sanzen, Itai Doshin, house visitation, seeking guidance — as answers in their own right.</p>
+        <p style="font-size:14.5px; line-height:1.6; color:rgba(246,241,228,0.8); margin:0;">Twenty-two scenarios, three rounds, one question underneath all of them: what actually fits <em>this</em> moment? The last round folds in real practice — Ichinen Sanzen, Itai Doshin, house visitation, study, daily practice, seeking guidance, and Kosen-rufu — as answers in their own right.</p>
         <ol class="steps">
           <li><span>One person opens this game on a shared screen and taps <strong>Start hosting</strong>.</span></li>
           <li><span>Everyone else scans the QR code with their own phone and joins as a player.</span></li>
@@ -2917,7 +2843,6 @@ async function renderHost(state){
         </div>
         <div class="qcounter mono">Q ${state.qIdx+1} / ${round.questions.length} — Oneness Score <strong style="color:var(--gold)">${state.score}</strong></div>
       </div>
-      ${progressBarHTML(state)}
 
       <div class="scenario-card">
         <div class="scenario-title display">${round.subtitle}</div>
@@ -3053,7 +2978,7 @@ function renderFinalHost(state){
     <div>
       <div class="final-score">
         <div class="eyebrow">Final result</div>
-        <div class="mandala-wrap">${mandalaSVG(Math.min(100, state.score/TOTAL_QUESTIONS), null, true)}</div>
+        <div class="mandala-wrap">${mandalaSVG(Math.min(100, state.score/22), null, true)}</div>
         <div class="final-num mono">${state.score}</div>
         <div class="eyebrow" style="color:rgba(246,241,228,0.6);">total oneness score</div>
         <p class="close-line">${CLOSING_LINE}</p>
@@ -3075,7 +3000,6 @@ let hasJoined = false;
 let playerSessionId = null;
 let votedFor = {};
 let playerName = localStorage.getItem('itaidoshin_player_name') || '';
-let joinRenderedFor = null; // guards against re-rendering the join screen mid-typing
 
 async function startPlayer(){
   await pollPlayer();
@@ -3117,8 +3041,8 @@ function renderJoin(){
   app.appendChild(el(`
     <div class="player-shell">
       <div style="text-align:center; padding-top:40px;">
-        <div class="mandala-wrap">${sunSVG(true)}</div>
-        <h1 class="display" style="font-size:32px; margin:8px 0 4px;">STARS AFTER SUNRISE</h1>
+        <div class="mandala-wrap">${mandalaSVG(20,'JOIN', true)}</div>
+        <h1 class="display" style="font-size:32px; margin:8px 0 4px;">ITAI DOSHIN</h1>
         <p class="hero-sub">Type your name to add your vote to the group.</p>
       </div>
       <div class="card">
@@ -3172,14 +3096,7 @@ async function pollPlayer(){
     }
   }
 
-  if(!hasJoined){
-    if(joinRenderedFor !== sess.id){
-      joinRenderedFor = sess.id;
-      renderJoin();
-    }
-    return;
-  }
-  joinRenderedFor = null;
+  if(!hasJoined){ return renderJoin(); }
 
   const state = await storeGet(stateKey(playerSessionId));
   if(!state){ return renderNoGameYet(); }
@@ -3218,7 +3135,6 @@ function renderVoting(state, round, q){
     <div class="player-shell">
       <div style="padding-top:10px;">
         <div class="eyebrow">${round.subtitle}</div>
-        ${progressBarHTML(state)}
         <p class="scenario-text" style="font-size:17px;">${q.scenario}</p>
         <div id="p-opts"></div>
         ${alreadyVoted ? `<div class="note-box">Vote submitted. Waiting on the group…</div>` : `<p style="text-align:center; color:rgba(246,241,228,0.5); font-size:12.5px;">Tap the answer that feels right.</p>`}
@@ -3254,7 +3170,6 @@ async function renderPlayerResults(state, round, q){
     <div class="player-shell">
       <div style="padding-top:10px;">
         <div class="eyebrow">${round.subtitle}</div>
-        ${progressBarHTML(state)}
         <p class="scenario-text" style="font-size:17px;">${q.scenario}</p>
         <div id="p-res"></div>
         <div class="note-box">${q.note}</div>
@@ -3279,142 +3194,13 @@ function renderFinalPlayer(state){
   app.appendChild(el(`
     <div class="player-shell final-score">
       <div class="eyebrow">Final result</div>
-      <div class="mandala-wrap">${mandalaSVG(Math.min(100, state.score/TOTAL_QUESTIONS), null, true)}</div>
+      <div class="mandala-wrap">${mandalaSVG(Math.min(100, state.score/22), null, true)}</div>
       <div class="final-num mono">${state.score}</div>
       <div class="eyebrow" style="color:rgba(246,241,228,0.6);">total oneness score</div>
       <p class="close-line">${CLOSING_LINE}</p>
     </div>
   `));
 }
-
-/* ============================= AMBIENT MUSIC =============================
-   A soft, generated ambient pad + occasional chimes — no audio file needed,
-   so it works straight from GitHub Pages with no extra hosting. Browsers
-   block audio from starting on its own, so it only begins once someone
-   taps the round button in the corner (that tap is what "unlocks" audio).
-   Each device (host laptop, each phone) has its own independent on/off. */
-
-let audioCtx = null;
-let musicNodes = null;
-let musicPlaying = false;
-let chimeTimer = null;
-
-function ensureAudioCtx(){
-  if(!audioCtx){
-    try{ audioCtx = new (window.AudioContext || window.webkitAudioContext)(); }
-    catch(e){ return null; }
-  }
-  return audioCtx;
-}
-
-function startMusic(){
-  const ctx = ensureAudioCtx();
-  if(!ctx) return;
-  if(ctx.state === 'suspended') ctx.resume();
-  if(musicNodes) return;
-
-  const master = ctx.createGain();
-  master.gain.value = 0.0;
-  master.connect(ctx.destination);
-  master.gain.linearRampToValueAtTime(0.08, ctx.currentTime + 6);
-
-  const filter = ctx.createBiquadFilter();
-  filter.type = 'lowpass';
-  filter.frequency.value = 520;
-  filter.connect(master);
-
-  // a slow, open drone — root + fifth + octave, not a bright triad, kept low and spacious
-  const freqs = [98.00, 146.83, 196.00]; // G2, D3, G3
-  const oscs = freqs.map((f, i)=>{
-    const o = ctx.createOscillator();
-    o.type = 'triangle';
-    o.frequency.value = f;
-    o.detune.value = (i-1)*4;
-    const g = ctx.createGain();
-    g.gain.value = 0.0;
-    g.gain.linearRampToValueAtTime(0.16, ctx.currentTime + 7 + i*1.5);
-    o.connect(g);
-    g.connect(filter);
-    o.start();
-    return {o,g};
-  });
-
-  // very slow LFO — a gentle, barely-there breathing motion, not a pulse
-  const lfo = ctx.createOscillator();
-  lfo.frequency.value = 0.02;
-  const lfoGain = ctx.createGain();
-  lfoGain.gain.value = 90;
-  lfo.connect(lfoGain);
-  lfoGain.connect(filter.frequency);
-  lfo.start();
-
-  musicNodes = { master, filter, oscs, lfo };
-  musicPlaying = true;
-  scheduleChimes();
-}
-
-function scheduleChimes(){
-  clearTimeout(chimeTimer);
-  if(!musicPlaying || !audioCtx) return;
-  const scale = [392.00, 440.00, 523.25, 587.33]; // low, soft — a few calm notes, not a bright run
-  playChime(scale[Math.floor(Math.random()*scale.length)]);
-  chimeTimer = setTimeout(scheduleChimes, 11000 + Math.random()*9000);
-}
-
-function playChime(freq){
-  if(!audioCtx || !musicNodes) return;
-  const ctx = audioCtx;
-  const o = ctx.createOscillator();
-  o.type = 'sine';
-  o.frequency.value = freq;
-  const g = ctx.createGain();
-  g.gain.value = 0;
-  g.gain.linearRampToValueAtTime(0.025, ctx.currentTime + 0.4);
-  g.gain.exponentialRampToValueAtTime(0.0001, ctx.currentTime + 5);
-  o.connect(g);
-  g.connect(musicNodes.master);
-  o.start();
-  o.stop(ctx.currentTime + 5);
-}
-
-function stopMusic(){
-  musicPlaying = false;
-  clearTimeout(chimeTimer);
-  if(!musicNodes || !audioCtx){ return; }
-  const ctx = audioCtx;
-  const { master, oscs, lfo } = musicNodes;
-  master.gain.linearRampToValueAtTime(0.0, ctx.currentTime + 1.2);
-  setTimeout(()=>{
-    try{ oscs.forEach(({o})=>o.stop()); lfo.stop(); }catch(e){}
-  }, 1300);
-  musicNodes = null;
-}
-
-function toggleMusic(){
-  if(musicPlaying){ stopMusic(); } else { startMusic(); }
-  localStorage.setItem('stars_music_on', musicPlaying ? '1' : '0');
-  updateMusicButton();
-}
-
-function updateMusicButton(){
-  const btn = document.getElementById('music-toggle');
-  if(!btn) return;
-  btn.textContent = musicPlaying ? '🔊' : '🔇';
-  btn.classList.toggle('playing', musicPlaying);
-  btn.setAttribute('aria-label', musicPlaying ? 'Mute background music' : 'Play background music');
-}
-
-function initMusicButton(){
-  const btn = document.createElement('button');
-  btn.id = 'music-toggle';
-  btn.type = 'button';
-  btn.className = 'music-toggle';
-  btn.textContent = '🔇';
-  btn.setAttribute('aria-label', 'Play background music');
-  btn.onclick = toggleMusic;
-  document.body.appendChild(btn);
-}
-initMusicButton();
 
 /* ============================= BOOT ============================= */
 
